@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Workflow Agent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 2rem auto;
+            max-width: 1400px;
+        }
+        .header-section {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .main-title {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: #6c757d;
+            font-size: 1.2rem;
+            margin-bottom: 0;
+        }
+        .status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .status-online {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-offline {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        textarea, input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 200px;
+            resize: vertical;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            text-align: center;
+            margin: 2rem 0;
+            display: none;
+            padding: 3rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            color: white;
+        }
+        .loading-spinner {
+            font-size: 2rem;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .progress-bar-container {
+            width: 100%;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .results {
+            margin-top: 30px;
+            display: none;
+        }
+        .platform-post {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .platform-post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .platform-header {
+            font-weight: 700;
+            color: #495057;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .platform-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+        }
+        .twitter-icon { background: #1da1f2; }
+        .linkedin-icon { background: #0077b5; }
+        .instagram-icon { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        .post-content {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 0.8rem 0;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            line-height: 1.6;
+        }
+        .metadata {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .hashtags {
+            color: #1da1f2;
+        }
+        .mentions {
+            color: #1da1f2;
+        }
+        .error {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .timing {
+            background: #f0f8ff;
+            border: 1px solid #bee3f8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container position-relative">
+        <div id="apiStatus" class="status-indicator">
+            <i class="fas fa-circle"></i> Checking...
+        </div>
+        
+        <div class="header-section">
+            <h1 class="main-title">
+                <i class="fas fa-rocket"></i> Content Workflow Agent
+            </h1>
+            <p class="subtitle">Transform your blog posts into optimized social media content</p>
+        </div>
+        
+        <form id="contentForm">
+            <div class="form-group">
+                <label for="blogText">Blog Post Content:</label>
+                <textarea id="blogText" placeholder="Paste your blog post content here..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="topicHint">Topic Hint (optional):</label>
+                <input type="text" id="topicHint" placeholder="e.g., AI marketing, tech innovation, business strategy">
+            </div>
+            
+            <button type="submit">Generate Social Media Content</button>
+        </form>
+        
+        <div class="loading">
+            <div class="loading-spinner">
+                <i class="fas fa-cog"></i>
+            </div>
+            <h4 class="mt-3">Processing Your Content</h4>
+            <p class="mb-3">Our AI is analyzing your blog post and generating optimized social media content...</p>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p class="mt-2"><small>This may take 30-60 seconds</small></p>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="mb-4">
+                        <i class="fas fa-magic"></i> Generated Content
+                    </h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div id="posts"></div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-clock"></i> Optimal Posting Times</h5>
+                        </div>
+                        <div class="card-body" id="timings">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Export Section -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <button id="exportBtn" class="btn btn-success btn-lg" style="display: none;">
+                        <i class="fas fa-download"></i> Download Complete Report (.txt)
+                    </button>
+                    <p class="text-muted mt-2" style="display: none;" id="exportNote">
+                        <small>Includes all content, sources, compliance details, and clickable links</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Check API status on page load
+        async function checkApiStatus() {
+            try {
+                const response = await fetch('/health', { timeout: 5000 });
+                const status = document.getElementById('apiStatus');
+                if (response.ok) {
+                    status.className = 'status-indicator status-online';
+                    status.innerHTML = '<i class="fas fa-circle"></i> API Online';
+                } else {
+                    status.className = 'status-indicator status-offline';
+                    status.innerHTML = '<i class="fas fa-circle"></i> API Error';
+                }
+            } catch (error) {
+                const status = document.getElementById('apiStatus');
+                status.className = 'status-indicator status-offline';
+                status.innerHTML = '<i class="fas fa-circle"></i> API Offline';
+            }
+        }
+
+        // Simulate progress bar
+        function simulateProgress() {
+            const progressBar = document.getElementById('progressBar');
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 95) progress = 95;
+                progressBar.style.width = progress + '%';
+                if (progress >= 95) clearInterval(interval);
+            }, 1000);
+            return interval;
+        }
+
+        // Global variables to store current form data and results
+        let currentFormData = null;
+        let currentResults = null;
+
+        // Download text report
+        async function downloadTextReport() {
+            if (!currentFormData) {
+                alert('No data to export. Please generate content first.');
+                return;
+            }
+
+            console.log('Starting download...');
+            const exportBtn = document.getElementById('exportBtn');
+            const originalText = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            exportBtn.disabled = true;
+
+            try {
+                console.log('Sending export request with data:', currentFormData);
+                const response = await fetch('/v1/export', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(currentFormData)
+                });
+
+                console.log('Export response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`Export failed: ${response.status}`);
+                }
+
+                const textContent = await response.text();
+                console.log('Received text content, length:', textContent.length);
+                
+                // Create and download file
+                const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `content-workflow-report-${timestamp}.txt`;
+                
+                // Try modern download API first
+                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                    // IE/Edge
+                    window.navigator.msSaveOrOpenBlob(blob, filename);
+                } else {
+                    // Modern browsers
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = filename;
+                    a.target = '_blank';
+                    
+                    document.body.appendChild(a);
+                    console.log('Triggering download...');
+                    
+                    // Force click event
+                    if (a.click) {
+                        a.click();
+                    } else {
+                        // Fallback for older browsers
+                        const evt = document.createEvent('MouseEvents');
+                        evt.initEvent('click', true, true);
+                        a.dispatchEvent(evt);
+                    }
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        if (document.body.contains(a)) {
+                            document.body.removeChild(a);
+                        }
+                        window.URL.revokeObjectURL(url);
+                    }, 100);
+                }
+
+                console.log('Download completed successfully');
+
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to generate export. Please try again.');
+            } finally {
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+            }
+        }
+
+        // Load API status on page load
+        window.addEventListener('load', checkApiStatus);
+
+        document.getElementById('contentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const blogText = document.getElementById('blogText').value;
+            const topicHint = document.getElementById('topicHint').value;
+            
+            if (!blogText.trim()) {
+                alert('Please enter blog post content');
+                return;
+            }
+
+            // Store form data for export
+            currentFormData = {
+                text: blogText,
+                topic_hint: topicHint || null
+            };
+            
+            // Show loading with progress simulation
+            document.querySelector('.loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.querySelector('button').disabled = true;
+            const progressInterval = simulateProgress();
+            
+            try {
+                const response = await fetch('/v1/plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: blogText,
+                        topic_hint: topicHint || null
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('posts').innerHTML = `<div class="error">Error processing content: ${error.message}</div>`;
+                document.getElementById('results').style.display = 'block';
+            } finally {
+                clearInterval(progressInterval);
+                document.getElementById('progressBar').style.width = '100%';
+                setTimeout(() => {
+                    document.querySelector('.loading').style.display = 'none';
+                    document.querySelector('button').disabled = false;
+                    document.getElementById('progressBar').style.width = '0%';
+                }, 500);
+            }
+        });
+        
+        function getPlatformIcon(platform) {
+            const icons = {
+                'twitter': '<i class="fab fa-twitter"></i>',
+                'linkedin': '<i class="fab fa-linkedin"></i>',
+                'instagram': '<i class="fab fa-instagram"></i>'
+            };
+            return icons[platform] || '<i class="fas fa-share-alt"></i>';
+        }
+
+        function displayResults(data) {
+            const postsContainer = document.getElementById('posts');
+            const timingsContainer = document.getElementById('timings');
+            
+            // Display posts
+            let postsHTML = '';
+            data.posts.forEach(post => {
+                const status = data.reviews[post.platform]?.status || 'unknown';
+                const statusIcon = status === 'pass' ? '<i class="fas fa-check-circle text-success"></i>' : 
+                                 status === 'flag' ? '<i class="fas fa-exclamation-triangle text-warning"></i>' : 
+                                 '<i class="fas fa-times-circle text-danger"></i>';
+                
+                const platformIcon = getPlatformIcon(post.platform);
+                
+                postsHTML += `
+                    <div class="platform-post">
+                        <div class="platform-header">
+                            <span class="platform-icon ${post.platform}-icon d-flex align-items-center justify-content-center text-white">
+                                ${platformIcon}
+                            </span>
+                            ${post.platform.toUpperCase()}
+                            ${statusIcon}
+                        </div>
+                        <div class="post-content">${post.primary_text}</div>
+                        ${post.thread && post.thread.length > 1 ? `
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#thread-${post.platform}">
+                                    <i class="fas fa-thread"></i> View Thread (${post.thread.length} tweets)
+                                </button>
+                                <div class="collapse mt-2" id="thread-${post.platform}">
+                                    ${post.thread.map((tweet, i) => `<div class="alert alert-light"><strong>Tweet ${i+1}:</strong> ${tweet}</div>`).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <small class="text-muted"><strong>Hashtags:</strong></small><br>
+                                <span class="hashtags">${post.hashtags.join(' ')}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted"><strong>Length:</strong> ${post.primary_text.length} characters</small><br>
+                                ${post.mentions.length > 0 ? `<span class="mentions">${post.mentions.join(' ')}</span>` : ''}
+                            </div>
+                        </div>
+                        ${data.reviews[post.platform]?.issues?.length > 0 ? `
+                            <div class="alert alert-warning mt-3">
+                                <strong><i class="fas fa-exclamation-triangle"></i> Compliance Issues:</strong>
+                                <ul class="mb-0 mt-2">
+                                    ${data.reviews[post.platform].issues.map(issue => `<li><strong>${issue.rule}:</strong> ${issue.message}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            // Display timings
+            let timingsHTML = '';
+            data.timings.forEach(timing => {
+                const date = new Date(timing.local_datetime_iso);
+                const platformIcon = getPlatformIcon(timing.platform);
+                timingsHTML += `
+                    <div class="d-flex align-items-center mb-3 p-3 border rounded">
+                        <span class="platform-icon ${timing.platform}-icon d-flex align-items-center justify-content-center text-white me-3">
+                            ${platformIcon}
+                        </span>
+                        <div>
+                            <strong class="text-uppercase">${timing.platform}</strong><br>
+                            <small class="text-muted">${date.toLocaleDateString()} at ${date.toLocaleTimeString()}</small><br>
+                            <em class="text-primary">${timing.rationale}</em>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            postsContainer.innerHTML = postsHTML;
+            timingsContainer.innerHTML = timingsHTML;
+            document.getElementById('results').style.display = 'block';
+            
+            // Store results for export and show export button
+            currentResults = data;
+            const exportBtn = document.getElementById('exportBtn');
+            const exportNote = document.getElementById('exportNote');
+            
+            if (exportBtn && exportNote) {
+                exportBtn.style.display = 'inline-block';
+                exportNote.style.display = 'block';
+                console.log('Export button made visible');
+            } else {
+                console.error('Export button elements not found');
+            }
+            
+            // Smooth scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+
+
+        // Add event listener for export button
+        document.addEventListener('DOMContentLoaded', function() {
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', downloadTextReport);
+                console.log('Export button event listener attached');
+            } else {
+                console.error('Export button not found for event listener');
+            }
+        });
+    </script>
+</body>
+</html>
