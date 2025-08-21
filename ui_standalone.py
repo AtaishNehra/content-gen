@@ -308,7 +308,14 @@ KEY POINTS EXTRACTED
     
     # Add scheduling
     for timing in result.get('timings', []):
-        export_text += f"{timing.platform.upper()}: {timing.datetime.strftime('%Y-%m-%d %H:%M %Z')}\n"
+        # Parse the ISO datetime string for export
+        try:
+            from datetime import datetime
+            dt = datetime.fromisoformat(timing.local_datetime_iso)
+            formatted_time = dt.strftime('%Y-%m-%d %H:%M')
+        except:
+            formatted_time = timing.local_datetime_iso
+        export_text += f"{timing.platform.upper()}: {formatted_time}\n"
         export_text += f"Rationale: {timing.rationale}\n\n"
     
     return export_text
