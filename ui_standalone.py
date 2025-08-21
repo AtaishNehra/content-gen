@@ -222,7 +222,7 @@ def display_fact_checking(reviews):
             if review.issues:
                 st.markdown("**Compliance Issues:**")
                 for issue in review.issues:
-                    st.markdown(f"- {issue.rule}: {issue.description}")
+                    st.markdown(f"- {issue.rule_id}: {issue.message}")
             
             # Fact-check claims
             if hasattr(review, 'claims') and review.claims:
