@@ -247,10 +247,18 @@ def display_scheduling(timings):
     st.subheader("⏰ Optimal Posting Times")
     
     for timing in timings:
+        # Parse the ISO datetime string to display it properly
+        try:
+            from datetime import datetime
+            dt = datetime.fromisoformat(timing.local_datetime_iso)
+            formatted_time = dt.strftime('%Y-%m-%d %H:%M')
+        except:
+            formatted_time = timing.local_datetime_iso
+            
         st.markdown(f"""
         <div class="timing-card">
             <strong>📱 {timing.platform.title()}</strong><br>
-            <strong>🕐 {timing.datetime.strftime('%Y-%m-%d %H:%M %Z')}</strong><br>
+            <strong>🕐 {formatted_time}</strong><br>
             <em>{timing.rationale}</em>
         </div>
         """, unsafe_allow_html=True)
