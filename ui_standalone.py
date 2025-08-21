@@ -249,8 +249,8 @@ def display_scheduling(timings):
     for timing in timings:
         # Parse the ISO datetime string to display it properly
         try:
-            from datetime import datetime
-            dt = datetime.fromisoformat(timing.local_datetime_iso)
+            from datetime import datetime as dt_parser
+            dt = dt_parser.fromisoformat(timing.local_datetime_iso)
             formatted_time = dt.strftime('%Y-%m-%d %H:%M')
         except:
             formatted_time = timing.local_datetime_iso
@@ -267,8 +267,9 @@ def generate_export_text(result):
     """Generate formatted text for export."""
     if not result:
         return "No content to export."
-        
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    from datetime import datetime as dt
+    timestamp = dt.now().strftime("%Y-%m-%d %H:%M:%S")
     
     export_text = f"""Content Workflow Agent - Export Report
 Generated: {timestamp}
@@ -310,8 +311,8 @@ KEY POINTS EXTRACTED
     for timing in result.get('timings', []):
         # Parse the ISO datetime string for export
         try:
-            from datetime import datetime
-            dt = datetime.fromisoformat(timing.local_datetime_iso)
+            from datetime import datetime as dt_parser
+            dt = dt_parser.fromisoformat(timing.local_datetime_iso)
             formatted_time = dt.strftime('%Y-%m-%d %H:%M')
         except:
             formatted_time = timing.local_datetime_iso
