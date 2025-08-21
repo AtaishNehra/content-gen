@@ -27,7 +27,7 @@ from typing import List, Tuple
 # This ensures fact-checking continues working even if specific search libraries fail
 try:
     import wikipedia
-    from duckduckgo_search import DDGS
+    from ddgs import DDGS
 except ImportError as e:
     print(f"Search import error: {e}")
     # Fallback implementations for testing environments
