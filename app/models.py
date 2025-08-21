@@ -116,9 +116,9 @@ class PlatformPost(BaseModel):
             raise ValueError("Twitter posts must be ≤280 characters")
         
         # LinkedIn posts perform best in the professional range
-        # Too short appears low-effort, too long reduces engagement
-        elif platform == "linkedin" and (len(v) < 500 or len(v) > 1200):
-            raise ValueError("LinkedIn posts should be 500-1200 characters")
+        # Allow shorter posts but encourage longer professional content
+        elif platform == "linkedin" and (len(v) < 100 or len(v) > 1300):
+            raise ValueError("LinkedIn posts should be 100-1300 characters")
         
         # Instagram captions have complex visibility rules
         # First 125 characters always visible, beyond 2200 gets truncated
