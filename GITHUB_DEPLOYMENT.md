@@ -273,7 +273,3 @@ For issues and questions:
 2. Review error logs for specific issues
 3. Test with minimal examples
 4. Check OpenAI API status and limits
-
-## License
-
-[Include your license information here]
